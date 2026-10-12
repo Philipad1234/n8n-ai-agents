@@ -27,10 +27,19 @@ Classifies form-submitted reviews as Positive, Negative, or Neutral, then logs t
 
 ![Sentiment analysis workflow](sentiment-analysis.png)
 
-## Example questions for the RAG agent
-- What was Tesla's free cash flow in Q4 2024?
-- How did total revenue change between Q3 and Q4 2024?
-- What did Tesla say about its outlook for 2025?
+## Example results from the RAG agent
+Answers were checked against the source reports.
+
+**What was Tesla's free cash flow in Q4 2024?**
+> $2.0 billion, from the Q4 2024 report. ✅ Correct
+
+**How did total revenue change between Q3 and Q4 2024?**
+> Q3 2024: $25.182B → Q4 2024: $25.707B, a change of +$525M (+2.1% quarter over quarter), with a Q4 breakdown of $19.80B automotive, $3.06B energy, and $2.85B services. ✅ Correct, using figures from both reports and the calculator tool
+
+**What did Tesla say about its outlook for 2025?**
+> Covered FSD and Robotaxi plans, more affordable models, Semi production starting by end of 2025, and Cybercab volume production in 2026 at Gigafactory Texas. ⚠️ Mostly correct: it described the New Model Y production ramp as already started, while the report says it begins later in Q1, and it missed the Outlook section's guidance on vehicle growth and 50%+ energy storage growth.
+
+**Next improvement:** add the report section and page to each retrieved chunk's metadata so the agent can cite more precisely and pull from the dedicated Outlook section.
 
 ## Stack
 n8n · Anthropic Claude · OpenAI (embeddings, GPT-4o) · Pinecone · Ollama · Google Drive · Google Sheets
