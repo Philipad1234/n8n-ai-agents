@@ -1,0 +1,93 @@
+{
+  "name": "HubSpot Schema Setup",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "40635f34-23cc-4ee7-a597-4a9426b19611",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Property definitions for the lead pipeline.\n// Each returned item becomes one \"create property\" API call in the next node.\n\nconst opts = (pairs) =>\n  pairs.map(([value, label], i) => ({ value, label, displayOrder: i }));\n\nconst contacts = [\n  { name: \"lead_score\", label: \"Lead score\", type: \"number\", fieldType: \"number\" },\n  { name: \"lead_tier\", label: \"Lead tier\", type: \"enumeration\", fieldType: \"select\",\n    options: opts([[\"hot\", \"Hot\"], [\"warm\", \"Warm\"], [\"nurture\", \"Nurture\"]]) },\n  { name: \"lead_score_reason\", label: \"Lead score reason\", type: \"string\", fieldType: \"textarea\" },\n  { name: \"lead_utm_source\", label: \"Lead UTM source\", type: \"string\", fieldType: \"text\" },\n  { name: \"lead_utm_medium\", label: \"Lead UTM medium\", type: \"string\", fieldType: \"text\" },\n  { name: \"lead_utm_campaign\", label: \"Lead UTM campaign\", type: \"string\", fieldType: \"text\" },\n  { name: \"is_free_email\", label: \"Is free email\", type: \"bool\", fieldType: \"booleancheckbox\",\n    options: opts([[\"true\", \"Yes\"], [\"false\", \"No\"]]) },\n  { name: \"enrichment_status\", label: \"Enrichment status\", type: \"enumeration\", fieldType: \"select\",\n    options: opts([\n      [\"enriched_hunter\", \"Enriched (Hunter)\"],\n      [\"enriched_website\", \"Enriched (website + LLM)\"],\n      [\"skipped_free_email\", \"Skipped (free email)\"],\n      [\"failed\", \"Failed\"],\n    ]) },\n  { name: \"lead_submission_id\", label: \"Lead submission ID\", type: \"string\", fieldType: \"text\" },\n];\n\nconst companies = [\n  { name: \"icp_segment\", label: \"ICP segment\", type: \"enumeration\", fieldType: \"select\",\n    options: opts([\n      [\"health_plan\", \"Health plan\"],\n      [\"provider\", \"Provider\"],\n      [\"employer\", \"Employer\"],\n      [\"other\", \"Other\"],\n    ]) },\n  { name: \"enrichment_summary\", label: \"Enrichment summary\", type: \"string\", fieldType: \"textarea\" },\n];\n\nconst toItems = (objectType, props) =>\n  props.map((p) => ({\n    json: { objectType, body: { ...p, groupName: \"lead_pipeline\" } },\n  }));\n\nreturn [...toItems(\"contacts\", contacts), ...toItems(\"companies\", companies)];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "df16cde8-052d-4653-a585-b0000ba2e581",
+      "name": "Define lead pipeline properties"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=  https://api.hubapi.com/crm/v3/properties/{{ $json.objectType }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=  {{ JSON.stringify($json.body) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        0
+      ],
+      "id": "60e62618-e169-4906-8e84-c2e80079e27f",
+      "name": "Create properties in HubSpot",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "gcVuVqQBjQjwr65Q",
+          "name": "HubSpot Service Key - Lead Pipeline"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Define lead pipeline properties",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Define lead pipeline properties": {
+      "main": [
+        [
+          {
+            "node": "Create properties in HubSpot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "72ffb59e-89c7-4b79-9801-d31c2247d56e",
+  "meta": {
+    "instanceId": "5ec32a661fcef1dc6899d63c595eff8489d041bddd81558284ea79cdb37b3275"
+  },
+  "nodeGroups": [],
+  "id": "ECcVTKoo7ls4l4cG",
+  "tags": []
+}

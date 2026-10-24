@@ -1,0 +1,416 @@
+{
+  "name": "Lead Pipeline - Errors",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ab5ac598-dbfd-440f-ac3d-f8cd6b0a7210",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Runs when the main workflow crashes. Tells a person, and logs it.\n// The lead's data isn't lost: n8n keeps the failed execution, so it can be retried.\n\nconst ex = $json.execution ?? {};\nconst wf = $json.workflow ?? {};\nconst esc = (v) => String(v ?? \"\").replace(/&/g, \"&amp;\").replace(/</g, \"&lt;\").replace(/>/g, \"&gt;\");\n\nconst node = ex.lastNodeExecuted ?? \"unknown node\";\nconst message = ex.error?.message ?? \"unknown error\";\n\nconst text = [\n  \":rotating_light: *Lead pipeline crashed*\",\n  `Workflow: ${esc(wf.name)}`,\n  `Failed at: *${esc(node)}*`,\n  `Error: ${esc(message)}`,\n  ex.url ? `<${ex.url}|Open execution in n8n>` : `Execution ID: ${esc(ex.id)}`,\n  \"The lead's data is saved in this execution. Fix the cause, then retry it from the Executions list.\",\n].join(\"\\n\");\n\nreturn {\n  json: {\n    slack_message: { channel: \"C0CBRN9KKH8\", text, unfurl_links: false },\n    log_row: {\n      logged_at: new Date().toISOString(),\n      outcome: \"crashed\",\n      errors: `${node}: ${message} (execution ${ex.id ?? \"?\"})`,\n    },\n  },\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "39aeb8c0-6985-4b6f-aadb-08c69f1f7b6c",
+      "name": "Build error alert"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.slack_message) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        0
+      ],
+      "id": "65e4c27e-1bd6-4bce-9878-d2a8317bb6e4",
+      "name": "Slack: post error alert",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "P1Qx1n3oqQJiaYms",
+          "name": "Slack Bot Token - Lead Pipeline"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1_pNVdCTjBhblgy_dqKFas8dxbDs3Amdd0WlVFUw1eu4/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "runs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_pNVdCTjBhblgy_dqKFas8dxbDs3Amdd0WlVFUw1eu4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "logged_at": "={{ $('Build error alert').item.json.log_row.logged_at }}",
+            "outcome": "={{ $('Build error alert').item.json.log_row.outcome }}",
+            "errors": "={{ $('Build error alert').item.json.log_row.errors }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "logged_at",
+              "displayName": "logged_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "submission_id",
+              "displayName": "submission_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "outcome",
+              "displayName": "outcome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email_domain",
+              "displayName": "email_domain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "is_free_email",
+              "displayName": "is_free_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "utm_source",
+              "displayName": "utm_source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "utm_medium",
+              "displayName": "utm_medium",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "utm_campaign",
+              "displayName": "utm_campaign",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "validation_errors",
+              "displayName": "validation_errors",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "enrichment_status",
+              "displayName": "enrichment_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "icp_segment",
+              "displayName": "icp_segment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tier",
+              "displayName": "tier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "company_action",
+              "displayName": "company_action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "contact_action",
+              "displayName": "contact_action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "association_status",
+              "displayName": "association_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "alert_status",
+              "displayName": "alert_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "hubspot_contact_id",
+              "displayName": "hubspot_contact_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "errors",
+              "displayName": "errors",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tokens_enrich_in",
+              "displayName": "tokens_enrich_in",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tokens_enrich_out",
+              "displayName": "tokens_enrich_out",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tokens_score_in",
+              "displayName": "tokens_score_in",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tokens_score_out",
+              "displayName": "tokens_score_out",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        0
+      ],
+      "id": "7492579d-e095-4dcc-af75-497157cb5c41",
+      "name": "Log crash to Sheets",
+      "credentials": {
+        "googleApi": {
+          "id": "XrjJ5RH08NswuexK",
+          "name": "Google Sheets - Lead Log (service account)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Crash handler\nAlerts Slack and logs any unexpected failure in the main workflow",
+        "height": 304,
+        "width": 864,
+        "color": "#FDDCDC"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -128
+      ],
+      "id": "376dac78-7881-4176-813c-82792f61840a",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build error alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build error alert": {
+      "main": [
+        [
+          {
+            "node": "Slack: post error alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack: post error alert": {
+      "main": [
+        [
+          {
+            "node": "Log crash to Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log crash to Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "1a8d882e-58c4-4cad-80a8-42fc6efbcc7d",
+  "meta": {
+    "instanceId": "5ec32a661fcef1dc6899d63c595eff8489d041bddd81558284ea79cdb37b3275"
+  },
+  "nodeGroups": [],
+  "id": "E9Fldyd3Dbqco3jL",
+  "tags": []
+}

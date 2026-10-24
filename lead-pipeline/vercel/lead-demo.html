@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lead Pipeline Demo | Philip Adams</title>
+    <meta
+      name="description"
+      content="A live inbound lead pipeline: serverless intake, website enrichment, AI scoring, HubSpot sync and Slack routing."
+    />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/assets/images/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0b0c0e;
+        --panel: #131519;
+        --line: #262a31;
+        --text: #ece8df;
+        --muted: #9a958a;
+        --gold: #c9a45c;
+        --error: #e07a6b;
+        --ok: #7fbf8e;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Inter", system-ui, sans-serif;
+        line-height: 1.6;
+        background-image:
+          linear-gradient(rgba(201, 164, 92, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(201, 164, 92, 0.04) 1px, transparent 1px);
+        background-size: 32px 32px;
+      }
+      .wrap {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 64px 16px 96px;
+      }
+      .back {
+        font:
+          500 13px "IBM Plex Mono",
+          monospace;
+        color: var(--muted);
+        text-decoration: none;
+      }
+      .back:hover {
+        color: var(--gold);
+      }
+      .eyebrow {
+        font:
+          500 12px "IBM Plex Mono",
+          monospace;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin: 40px 0 8px;
+      }
+      h1 {
+        font:
+          600 clamp(32px, 6vw, 44px)/1.1 "Fraunces",
+          serif;
+        margin: 0 0 16px;
+      }
+      .intro {
+        color: var(--muted);
+        margin: 0 0 12px;
+      }
+      .flow {
+        font:
+          400 13px/1.7 "IBM Plex Mono",
+          monospace;
+        color: var(--muted);
+        border-left: 2px solid var(--gold);
+        padding-left: 12px;
+        margin: 24px 0;
+      }
+      .notice {
+        font-size: 14px;
+        color: var(--muted);
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px 14px;
+        margin: 0 0 32px;
+      }
+      form {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 24px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      @media (max-width: 560px) {
+        .row {
+          grid-template-columns: 1fr;
+        }
+      }
+      .field {
+        margin-bottom: 16px;
+      }
+      label {
+        display: block;
+        font:
+          500 12px "IBM Plex Mono",
+          monospace;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      label .req {
+        color: var(--gold);
+      }
+      input,
+      textarea {
+        width: 100%;
+        background: var(--bg);
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 11px 12px;
+        font:
+          400 15px "Inter",
+          sans-serif;
+      }
+      textarea {
+        min-height: 110px;
+        resize: vertical;
+      }
+      input:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--gold);
+      }
+      .field.has-error input {
+        border-color: var(--error);
+      }
+      .field-error {
+        font-size: 13px;
+        color: var(--error);
+        margin-top: 6px;
+        min-height: 0;
+      }
+      .hp {
+        position: absolute;
+        left: -10000px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+      }
+      button {
+        width: 100%;
+        margin-top: 8px;
+        padding: 13px 18px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--text);
+        color: var(--bg);
+        font:
+          600 15px "Inter",
+          sans-serif;
+        cursor: pointer;
+      }
+      button:hover:not(:disabled) {
+        background: var(--gold);
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: wait;
+      }
+      .status {
+        margin-top: 16px;
+        font-size: 14px;
+        min-height: 22px;
+      }
+      .status.ok {
+        color: var(--ok);
+      }
+      .status.err {
+        color: var(--error);
+      }
+      .attribution {
+        margin-top: 12px;
+        font:
+          400 12px "IBM Plex Mono",
+          monospace;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <a class="back" href="/">← Back to portfolio</a>
+
+      <p class="eyebrow">Live demo · GTM engineering</p>
+      <h1>Inbound lead pipeline</h1>
+      <p class="intro">
+        This form feeds a working pipeline I built. Submit a lead and it is
+        validated, enriched from the company's website, scored by AI against an
+        ideal customer profile, saved to HubSpot, and routed to Slack if it's
+        hot.
+      </p>
+
+      <p class="flow">
+        Form → Vercel function → n8n → website enrichment (Claude) →<br />
+        AI scoring (Claude) → HubSpot upsert → Slack alert → run log
+      </p>
+
+      <p class="notice">
+        <strong>Please use made-up details.</strong> Submissions are processed
+        by an AI pipeline and stored in a demo HubSpot CRM. The pipeline's
+        backend runs on my own machine, so if it's offline you'll see an error
+        message rather than a silent failure.
+      </p>
+
+      <form id="lead-form" novalidate>
+        <div class="row">
+          <div class="field" data-field="name">
+            <label for="name">Name <span class="req">*</span></label>
+            <input
+              id="name"
+              name="name"
+              autocomplete="name"
+              required
+              maxlength="100"
+            />
+            <div class="field-error" aria-live="polite"></div>
+          </div>
+          <div class="field" data-field="email">
+            <label for="email">Work email <span class="req">*</span></label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+              maxlength="254"
+            />
+            <div class="field-error" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field" data-field="company">
+            <label for="company">Company <span class="req">*</span></label>
+            <input
+              id="company"
+              name="company"
+              autocomplete="organization"
+              required
+              maxlength="150"
+            />
+            <div class="field-error" aria-live="polite"></div>
+          </div>
+          <div class="field" data-field="role">
+            <label for="role">Role</label>
+            <input
+              id="role"
+              name="role"
+              autocomplete="organization-title"
+              maxlength="120"
+            />
+            <div class="field-error" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div class="field" data-field="message">
+          <label for="message">What are you looking for?</label>
+          <textarea id="message" name="message" maxlength="2000"></textarea>
+          <div class="field-error" aria-live="polite"></div>
+        </div>
+
+        <!-- Attribution: filled in from the URL / first touch by utm.js -->
+        <input type="hidden" name="utm_source" />
+        <input type="hidden" name="utm_medium" />
+        <input type="hidden" name="utm_campaign" />
+
+        <!-- Honeypot: hidden from people, tempting to bots -->
+        <div class="hp" aria-hidden="true">
+          <label for="website">Website</label>
+          <input id="website" name="website" tabindex="-1" autocomplete="off" />
+        </div>
+
+        <button type="submit" id="submit">Submit lead</button>
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+        <div class="attribution" id="attribution"></div>
+      </form>
+    </main>
+
+    <script src="/assets/js/utm.js"></script>
+    <script>
+      (function () {
+        var form = document.getElementById("lead-form");
+        var button = document.getElementById("submit");
+        var status = document.getElementById("status");
+        var attribution = document.getElementById("attribution");
+
+        // Fill the hidden UTM fields, and show the visitor what was captured.
+        var utms = window.getLeadUtms ? window.getLeadUtms() : {};
+        ["utm_source", "utm_medium", "utm_campaign"].forEach(function (key) {
+          form.elements[key].value = utms[key] || "";
+        });
+        var parts = [
+          utms.utm_source,
+          utms.utm_medium,
+          utms.utm_campaign,
+        ].filter(Boolean);
+        attribution.textContent = parts.length
+          ? "Attribution captured: " + parts.join(" / ")
+          : "No campaign tags on this visit (try adding ?utm_source=linkedin to the URL).";
+
+        function clearErrors() {
+          form.querySelectorAll(".field").forEach(function (field) {
+            field.classList.remove("has-error");
+            field.querySelector(".field-error").textContent = "";
+          });
+        }
+
+        function showFieldError(name, message) {
+          var field = form.querySelector('[data-field="' + name + '"]');
+          if (!field) return;
+          field.classList.add("has-error");
+          field.querySelector(".field-error").textContent = message;
+        }
+
+        function setStatus(text, kind) {
+          status.textContent = text;
+          status.className = "status" + (kind ? " " + kind : "");
+        }
+
+        form.addEventListener("submit", async function (event) {
+          event.preventDefault();
+          clearErrors();
+          setStatus("");
+
+          var data = {};
+          new FormData(form).forEach(function (value, key) {
+            data[key] = value;
+          });
+
+          button.disabled = true;
+          button.textContent = "Sending…";
+
+          try {
+            var response = await fetch("/api/lead", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            });
+            var result = await response.json().catch(function () {
+              return {};
+            });
+
+            if (response.ok && result.ok) {
+              form.reset();
+              // Keep attribution for any further submissions in this visit.
+              ["utm_source", "utm_medium", "utm_campaign"].forEach(
+                function (key) {
+                  form.elements[key].value = utms[key] || "";
+                },
+              );
+              setStatus(
+                "Thanks, your lead is in the pipeline. Reference: " +
+                  (result.submission_id || "n/a"),
+                "ok",
+              );
+            } else if (
+              response.status === 400 &&
+              Array.isArray(result.errors)
+            ) {
+              result.errors.forEach(function (e) {
+                showFieldError(e.field, e.message);
+              });
+              setStatus("Please fix the highlighted fields.", "err");
+            } else {
+              // Keep what they typed so they can simply try again.
+              setStatus(
+                result.error ||
+                  "Something went wrong. Please try again in a minute.",
+                "err",
+              );
+            }
+          } catch (err) {
+            setStatus(
+              "Network error. Please check your connection and try again.",
+              "err",
+            );
+          } finally {
+            button.disabled = false;
+            button.textContent = "Submit lead";
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>
