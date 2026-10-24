@@ -52,4 +52,8 @@ Answers were checked against the source reports.
 n8n · Anthropic Claude · OpenAI (embeddings, GPT-4o) · Pinecone · Ollama · HubSpot API · Slack API · Vercel · Google Drive · Google Sheets
 
 ## Setup
-Import each JSON file into n8n, then add your own credentials for Anthropic, OpenAI, Pinecone, Google, and Ollama. No API keys are included in these files. Replace the placeholder Google Drive folder and Sheet IDs with your own, and create a Pinecone index to match.
+**Original three workflows:** import each JSON file into n8n, then add your own credentials for Anthropic, OpenAI, Pinecone, Google, and Ollama. Replace the placeholder Google Drive folder and Sheet IDs with your own, and create a Pinecone index to match.
+
+**Lead pipeline:** see the step-by-step setup in [`lead-pipeline/README.md`](lead-pipeline/README.md#running-it-yourself).
+
+No API keys are included in any of these files.
