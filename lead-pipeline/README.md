@@ -174,7 +174,7 @@ Scoring is about 90% of the cost. Moving it to Haiku would cut the total to roug
    - `Lead Intake Webhook Secret` (Header Auth, `x-webhook-secret`)
    - `Slack Bot Token - Lead Pipeline` (Bearer Auth)
    - `Google Sheets - Lead Log (service account)`
-3. Update the Slack channel ID, HubSpot portal ID and Sheet URL in the workflow to your own.
+3. Update the Slack channel ID, HubSpot portal ID and Sheet URL in both workflows to your own.
 4. **Vercel:** deploy `vercel/lead.js` as `api/lead.js` in your Vercel project, with `N8N_WEBHOOK_URL` and `N8N_WEBHOOK_SECRET` set; serve `vercel/lead-demo.html` and `vercel/utm.js`.
 5. **Test:** `test-leads/hot-lead.json` exercises the full path; `test-leads/crash-lead.json` is for crash-path testing (it only crashes with the deliberate test line in place).
 
