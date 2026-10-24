@@ -1,6 +1,13 @@
 # n8n AI Agents
 
-Three AI workflows built in n8n: a retrieval-augmented (RAG) chat agent, the ingestion pipeline that feeds it, and an LLM sentiment classifier.
+AI workflows built in n8n: an inbound lead pipeline with AI enrichment and scoring, a retrieval-augmented (RAG) chat agent, the ingestion pipeline that feeds it, and an LLM sentiment classifier.
+
+## ⭐ Inbound Lead Pipeline (`lead-pipeline/`)
+An end-to-end GTM pipeline: lead form with first-touch UTM capture → Vercel serverless intake → website enrichment with Claude (evidence verified in code) → three-part AI lead scoring → HubSpot company dedupe and contact upsert → Slack routing → run log, with an error workflow so no lead disappears silently.
+
+**[Read the full write-up →](lead-pipeline/README.md)**
+
+![Lead pipeline workflow](lead-pipeline/docs/workflow-overview.png)
 
 ## 1. RAG Document Q&A Agent (`rag-agent.json`)
 A chat agent that answers questions about Tesla's Q3 and Q4 2024 quarterly reports.
@@ -42,7 +49,7 @@ Answers were checked against the source reports.
 **Next improvement:** add the report section and page to each retrieved chunk's metadata so the agent can cite more precisely and pull from the dedicated Outlook section.
 
 ## Stack
-n8n · Anthropic Claude · OpenAI (embeddings, GPT-4o) · Pinecone · Ollama · Google Drive · Google Sheets
+n8n · Anthropic Claude · OpenAI (embeddings, GPT-4o) · Pinecone · Ollama · HubSpot API · Slack API · Vercel · Google Drive · Google Sheets
 
 ## Setup
 Import each JSON file into n8n, then add your own credentials for Anthropic, OpenAI, Pinecone, Google, and Ollama. No API keys are included in these files. Replace the placeholder Google Drive folder and Sheet IDs with your own, and create a Pinecone index to match.
