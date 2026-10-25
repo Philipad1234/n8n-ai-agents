@@ -2,8 +2,9 @@
 
 An end-to-end GTM data pipeline for a B2B healthtech company selling to health plans, providers and employers. A lead submitted on a web form is validated, enriched from the company's own website, scored by Claude against an ideal customer profile, deduplicated into HubSpot, routed to Slack if it's hot, and logged, with a failure path designed so no lead disappears silently.
 
-**Live demo form:** [philip-adams-portfolio.vercel.app/lead-demo.html](https://philip-adams-portfolio.vercel.app/lead-demo.html) *(the n8n backend runs on my machine, so the form shows a clear error when it's offline)*
-**Walkthrough video:** _Loom link_
+**Live demo form:** [philip-adams-portfolio.vercel.app/lead-demo.html](https://philip-adams-portfolio.vercel.app/lead-demo.html) _(the n8n backend runs on my machine, so the form shows a clear error when it's offline)_
+
+**Walkthrough video:** [Watch the demo on Loom](https://www.loom.com/share/01cd43df26ec432597a2e9dbacd64c71)
 
 ![Workflow overview](docs/workflow-overview.png)
 
@@ -11,15 +12,15 @@ An end-to-end GTM data pipeline for a B2B healthtech company selling to health p
 
 ## What it does
 
-| Stage | What happens |
-|---|---|
-| **Capture** | Static HTML form with first-touch UTM capture (stored for 90 days across the whole site), honeypot spam trap, field-level validation errors |
+| Stage                 | What happens                                                                                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Capture**           | Static HTML form with first-touch UTM capture (stored for 90 days across the whole site), honeypot spam trap, field-level validation errors                   |
 | **Serverless intake** | Vercel function validates and normalizes the lead, assigns a `submission_id`, and forwards it to n8n with a shared secret, retrying only recoverable failures |
-| **Enrichment** | Fetches the company homepage, strips it to clean text, and has Claude Haiku extract industry, ICP segment and size, then **verifies the evidence in code** |
-| **AI scoring** | Claude Sonnet scores three parts (segment fit, role fit, intent); code adds them up, applies business rules and sets the tier |
-| **CRM sync** | Company deduplicated by domain (search → create or update), contact upserted by email, contact associated to company |
-| **Routing** | Slack alert for hot leads, failed scores, and failed CRM saves; warm and nurture leads are tagged in HubSpot |
-| **Logging** | One Google Sheets row per run (IDs and outcomes, no personal data); a separate error workflow catches crashes |
+| **Enrichment**        | Fetches the company homepage, strips it to clean text, and has Claude Haiku extract industry, ICP segment and size, then **verifies the evidence in code**    |
+| **AI scoring**        | Claude Sonnet scores three parts (segment fit, role fit, intent); code adds them up, applies business rules and sets the tier                                 |
+| **CRM sync**          | Company deduplicated by domain (search → create or update), contact upserted by email, contact associated to company                                          |
+| **Routing**           | Slack alert for hot leads, failed scores, and failed CRM saves; warm and nurture leads are tagged in HubSpot                                                  |
+| **Logging**           | One Google Sheets row per run (IDs and outcomes, no personal data); a separate error workflow catches crashes                                                 |
 
 ---
 
@@ -95,24 +96,36 @@ flowchart LR
 
 ```json
 {
-  "enrichment": { "status": "enriched_website", "industry": "Hospital system", "icp_segment": "provider", "size_estimate": "unknown", "confidence": "high" },
+  "enrichment": {
+    "status": "enriched_website",
+    "industry": "Hospital system",
+    "icp_segment": "provider",
+    "size_estimate": "unknown",
+    "confidence": "high"
+  },
   "scoring": {
-    "status": "scored", "score": 96, "tier": "hot",
+    "status": "scored",
+    "score": 96,
+    "tier": "hot",
     "parts": { "segment_fit": 39, "role_fit": 29, "intent": 28 },
     "reason": "Director of Managed Care Contracting at a major health system needs market rate benchmarks for payer renegotiations next quarter and asked for a demo. Biggest gap is minor: no budget or decision-process detail."
   },
-  "crm": { "company": { "action": "created" }, "contact": { "action": "created" }, "association": { "status": "associated" } },
+  "crm": {
+    "company": { "action": "created" },
+    "contact": { "action": "created" },
+    "association": { "status": "associated" }
+  },
   "alert": { "status": "sent" }
 }
 ```
 
 **Three test leads, side by side:**
 
-| Lead | Enrichment | Segment | Parts (seg / role / intent) | Score | Tier | Alert |
-|---|---|---|---|---|---|---|
-| Director, managed care contracting at a health system; demo request with a timeline | enriched | provider | 39 / 29 / 28 | 96 | **hot** | sent |
-| VP network development, gmail address, decision "by end of month" | skipped (free email) | — | capped by rule | 74 | **warm** | — |
-| Marketing coordinator at an e-commerce company, "just browsing" | enriched | other | — | 8 | **nurture** | — |
+| Lead                                                                                | Enrichment           | Segment  | Parts (seg / role / intent) | Score | Tier        | Alert |
+| ----------------------------------------------------------------------------------- | -------------------- | -------- | --------------------------- | ----- | ----------- | ----- |
+| Director, managed care contracting at a health system; demo request with a timeline | enriched             | provider | 39 / 29 / 28                | 96    | **hot**     | sent  |
+| VP network development, gmail address, decision "by end of month"                   | skipped (free email) | —        | capped by rule              | 74    | **warm**    | —     |
+| Marketing coordinator at an e-commerce company, "just browsing"                     | enriched             | other    | —                           | 8     | **nurture** | —     |
 
 Two contacts at the same company, scored 96 and 84, show the intent part doing its job: same segment and seniority, but one message described an active evaluation and the other only a timeframe.
 
@@ -120,16 +133,16 @@ Two contacts at the same company, scored 96 and 84, show the intent part doing i
 
 ## Reliability: how no lead is lost
 
-| Failure | What happens |
-|---|---|
-| Invalid form input | Field-level errors in the form; nothing is sent |
-| n8n unreachable from Vercel | 3 attempts, recoverable errors only; then a clear error to the visitor, with their input kept so they can resend |
-| Company website down or blocked | Lead continues with `enrichment_status: failed` and is still scored and saved |
-| Claude unavailable or returns bad output | Enrichment falls back; scoring is marked `failed` and triggers a "needs manual review" Slack alert |
-| HubSpot company call fails | Contact is still saved, without the company link; the error is logged |
-| HubSpot contact save fails | Slack alert: "Lead NOT saved to HubSpot, save it manually" |
-| Slack returns `ok: false` (HTTP 200) | Detected in code and logged as a failed alert |
-| Unexpected crash anywhere | Error workflow posts the failed node and error to Slack, logs a `crashed` row, and the failed execution keeps the lead's data so it can be retried |
+| Failure                                  | What happens                                                                                                                                       |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Invalid form input                       | Field-level errors in the form; nothing is sent                                                                                                    |
+| n8n unreachable from Vercel              | 3 attempts, recoverable errors only; then a clear error to the visitor, with their input kept so they can resend                                   |
+| Company website down or blocked          | Lead continues with `enrichment_status: failed` and is still scored and saved                                                                      |
+| Claude unavailable or returns bad output | Enrichment falls back; scoring is marked `failed` and triggers a "needs manual review" Slack alert                                                 |
+| HubSpot company call fails               | Contact is still saved, without the company link; the error is logged                                                                              |
+| HubSpot contact save fails               | Slack alert: "Lead NOT saved to HubSpot, save it manually"                                                                                         |
+| Slack returns `ok: false` (HTTP 200)     | Detected in code and logged as a failed alert                                                                                                      |
+| Unexpected crash anywhere                | Error workflow posts the failed node and error to Slack, logs a `crashed` row, and the failed execution keeps the lead's data so it can be retried |
 
 ---
 
@@ -145,11 +158,11 @@ Two contacts at the same company, scored 96 and 84, show the intent part doing i
 
 ## Cost per lead
 
-| Step | Model | Typical tokens | Cost |
-|---|---|---|---|
-| Enrichment | Claude Haiku 5.5 | ~2,500 in / ~270 out | ≈ $0.0004 |
-| Scoring | Claude Sonnet 5.5 | ~1,100 in / ~120 out | ≈ $0.0034 |
-| **Total** | | | **≈ $0.004 per lead** (~$3.80 per 1,000) |
+| Step       | Model             | Typical tokens       | Cost                                     |
+| ---------- | ----------------- | -------------------- | ---------------------------------------- |
+| Enrichment | Claude Haiku 5.5  | ~2,500 in / ~270 out | ≈ $0.0004                                |
+| Scoring    | Claude Sonnet 5.5 | ~1,100 in / ~120 out | ≈ $0.0034                                |
+| **Total**  |                   |                      | **≈ $0.004 per lead** (~$3.80 per 1,000) |
 
 Scoring is about 90% of the cost. Moving it to Haiku would cut the total to roughly $0.0006 per lead, a trade between cost and judgment quality. Token counts are logged per run, so this is measured, not estimated.
 
@@ -194,4 +207,4 @@ lead-pipeline/
 └── docs/                           screenshots
 ```
 
-*Test data uses fictional people. Public company websites are used only as enrichment test inputs; there is no affiliation with those companies.*
+_Test data uses fictional people. Public company websites are used only as enrichment test inputs; there is no affiliation with those companies._
