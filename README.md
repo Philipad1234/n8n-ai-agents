@@ -57,3 +57,12 @@ n8n · Anthropic Claude · OpenAI (embeddings, GPT-4o) · Pinecone · Ollama · 
 **Lead pipeline:** see the step-by-step setup in [`lead-pipeline/README.md`](lead-pipeline/README.md#running-it-yourself).
 
 No API keys are included in any of these files.
+
+## Claude Code setup
+
+This repo is configured for Claude Code beyond the defaults:
+- `CLAUDE.md`: project rules (imports `lead-pipeline/CLAUDE.md`)
+- `/release-check` skill: pre-commit checklist (secrets, pinned data, credentials, README links)
+- `/send-test-lead` skill: sends a fictional lead to the webhook (manual only)
+- `workflow-reviewer` subagent: read-only review of n8n exports against the architecture rules
+- `PreToolUse` hook: blocks `git commit` / `git push` when changes contain secrets or pinned n8n data
