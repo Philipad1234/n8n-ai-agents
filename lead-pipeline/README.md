@@ -148,7 +148,7 @@ Two contacts at the same company, scored 96 and 84, show the intent part doing i
 
 ## Security and data handling
 
-- **No credentials in this repo.** n8n exports reference credentials by name and ID only; Vercel secrets live in environment variables. Exports were scanned before committing.
+- **No credentials in this repo.** n8n exports reference credentials by name and ID only; Vercel secrets live in environment variables. Exports are scanned before committing, and a Claude Code hook blocks any commit that contains a key, token or pinned n8n data.
 - **Least privilege.** HubSpot Service Key with 8 scopes (contacts/companies, objects and schemas only); Slack bot with `chat:write` only; Google service account with no project roles, shared on one sheet; workspace-scoped Anthropic key.
 - **The webhook is authenticated** with a shared-secret header, tested on both the reject and accept paths. Headers are dropped at the first node so the secret doesn't travel through the workflow.
 - **Untrusted input is treated as untrusted.** Website text and lead messages are labelled as data in prompts (prompt-injection defense), and lead text is escaped before posting to Slack (so nobody can trigger `<!channel>`).
@@ -195,6 +195,7 @@ Scoring is about 90% of the cost. Moving it to Haiku would cut the total to roug
 
 ```
 lead-pipeline/
+├── CLAUDE.md                       rules for AI coding assistants working in this folder
 ├── workflows/
 │   ├── lead-pipeline.json          main pipeline
 │   ├── lead-pipeline-errors.json   crash handler
