@@ -49,7 +49,7 @@ Answers were checked against the source reports.
 **Next improvement:** add the report section and page to each retrieved chunk's metadata so the agent can cite more precisely and pull from the dedicated Outlook section.
 
 ## Stack
-n8n · Anthropic Claude · OpenAI (embeddings, GPT-4o) · Pinecone · Ollama · HubSpot API · Slack API · Vercel · Google Drive · Google Sheets
+n8n · Anthropic Claude · Claude Code · OpenAI (embeddings, GPT-4o) · Pinecone · Ollama · HubSpot API · Slack API · Vercel · Google Drive · Google Sheets
 
 ## Setup
 **Original three workflows:** import each JSON file into n8n, then add your own credentials for Anthropic, OpenAI, Pinecone, Google, and Ollama. Replace the placeholder Google Drive folder and Sheet IDs with your own, and create a Pinecone index to match.
