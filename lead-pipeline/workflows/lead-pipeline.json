@@ -348,7 +348,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// One place that translates our pipeline's fields into HubSpot property names.\n// If HubSpot's schema changes, this is the only node to update.\n\nconst lead = $json;\nconst e = lead.enrichment ?? {};\nconst s = lead.scoring ?? {};\n\n// Drop empty values, so we never overwrite good CRM data with blanks.\nconst clean = (obj) =>\n  Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== null && v !== undefined && v !== \"\"));\n\nconst [firstname, ...lastParts] = String(lead.name ?? \"\").trim().split(/\\s+/);\n\nconst contact = clean({\n  email: lead.email,\n  firstname,\n  lastname: lastParts.join(\" \"),\n  jobtitle: lead.role,\n  company: lead.company,\n  lead_submission_id: lead.submission_id,\n  lead_utm_source: lead.utm_source,\n  lead_utm_medium: lead.utm_medium,\n  lead_utm_campaign: lead.utm_campaign,\n  is_free_email: String(lead.is_free_email),\n  enrichment_status: e.status,\n  lead_score: s.score,\n  lead_tier: s.tier,\n  lead_score_reason: s.reason,\n});\n\n// Free-email leads have no verifiable company, so no company record.\nconst hasCompany = !lead.is_free_email && Boolean(lead.email_domain);\n\nconst company = hasCompany\n  ? clean({\n      name: lead.company || lead.website?.title || lead.email_domain,\n      domain: lead.email_domain,\n      description: e.summary,\n      icp_segment: e.icp_segment,\n      enrichment_summary: [\n        e.industry && `Industry: ${e.industry}`,\n        e.size_estimate && `Size: ${e.size_estimate}`,\n        e.confidence && `Confidence: ${e.confidence}`,\n        `Source: ${e.status}`,\n      ].filter(Boolean).join(\" | \"),\n    })\n  : null;\n\nreturn { json: { ...lead, hubspot: { contact, company } } };"
+        "jsCode": "// One place that translates our pipeline's fields into HubSpot property names.\n// If HubSpot's schema changes, this is the only node to update.\n\nconst lead = $json;\nconst e = lead.enrichment ?? {};\nconst s = lead.scoring ?? {};\n\n// Drop empty values, so we never overwrite good CRM data with blanks.\nconst clean = (obj) =>\n  Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== null && v !== undefined && v !== \"\"));\n\nconst [firstname, ...lastParts] = String(lead.name ?? \"\").trim().split(/\\s+/);\n\nconst contact = clean({\n  email: lead.email,\n  firstname,\n  lastname: lastParts.join(\" \"),\n  jobtitle: lead.role,\n  company: lead.company,\n  lead_submission_id: lead.submission_id,\n  lead_utm_source: lead.utm_source,\n  lead_utm_medium: lead.utm_medium,\n  lead_utm_campaign: lead.utm_campaign,\n  is_free_email: String(lead.is_free_email),\n  enrichment_status: e.status,\n  lead_score: s.score,\n  lead_tier: s.tier,\n  lead_score_reason: s.reason,\n});\n\n// Free-email leads have no verifiable company, so no company record.\nconst hasCompany = !lead.is_free_email && Boolean(lead.email_domain);\n\nconst company = hasCompany\n  ? clean({\n      name: lead.company || lead.website?.title || lead.email_domain,\n      domain: lead.email_domain,\n      description: e.summary,\n      icp_segment: e.icp_segment,\n      // Only write a summary from a successful enrichment, so a failed run\n      // never replaces a good summary already in HubSpot.\n      enrichment_summary: e.status === \"enriched_website\"\n        ? [\n            e.industry && `Industry: ${e.industry}`,\n            e.size_estimate && `Size: ${e.size_estimate}`,\n            e.confidence && `Confidence: ${e.confidence}`,\n            `Source: ${e.status}`,\n          ].filter(Boolean).join(\" | \")\n        : null,\n    })\n  : null;\n\nreturn { json: { ...lead, hubspot: { contact, company } } };"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -499,8 +499,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        3808,
-        -288
+        3952,
+        -352
       ],
       "id": "0464d0ca-fd51-45fb-bd09-1564e3ec7284",
       "name": "HubSpot: update company",
@@ -517,7 +517,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Join the create / update / failure paths into one shape:\n// every lead leaves with crm.company = { id, action }.\n\nconst lead = $('Map fields to HubSpot').item.json;\nlet company;\n\nif (!lead.hubspot.company) {\n  company = { id: null, action: \"skipped\" };\n} else if ($json.error) {\n  company = {\n    id: null,\n    action: \"failed\",\n    error: typeof $json.error === \"string\" ? $json.error : ($json.error.message ?? \"request failed\"),\n  };\n} else {\n  const existed = ($('HubSpot: find company by domain').item.json.total ?? 0) > 0;\n  company = { id: $json.id, action: existed ? \"updated\" : \"created\" };\n}\n\nreturn { json: { ...lead, crm: { company } } };"
+        "jsCode": "// Join the create / update / failure paths into one shape:\n// every lead leaves with crm.company = { id, action }.\n\nconst lead = $('Map fields to HubSpot').item.json;\nlet company;\n\nif (!lead.hubspot.company) {\n  company = { id: null, action: \"skipped\" };\n} else if ($json.error) {\n  company = {\n    id: null,\n    action: \"failed\",\n    error: typeof $json.error === \"string\" ? $json.error : ($json.error.message ?? \"request failed\"),\n  };\n} else {\n  // Which path did we come from? If \"Anything to update?\" skipped the update,\n  // the item is still the search result (it has `results`). Otherwise it is\n  // HubSpot's create/update response, which should contain the company id.\n  const found = $('HubSpot: find company by domain').item.json;\n  const existed = (found.total ?? 0) > 0;\n  const skipped = Array.isArray($json.results);\n  const id = skipped ? (found.results?.[0]?.id ?? null) : ($json.id ?? null);\n\n  if (!id) {\n    // Never report success without an id: the contact couldn't be linked.\n    company = {\n      id: null,\n      action: \"failed\",\n      error: skipped ? \"search matched but returned no company id\" : \"HubSpot returned no company id\",\n    };\n  } else {\n    company = { id, action: skipped ? \"unchanged\" : (existed ? \"updated\" : \"created\") };\n  }\n}\n\nreturn { json: { ...lead, crm: { company } } };"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1087,6 +1087,40 @@
       ],
       "id": "b2fc9e87-ebff-4cbf-be64-a692acd69134",
       "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cd631133-288d-46d3-b306-45cc65a7917a",
+              "leftValue": "={{ Object.keys($('Map fields to HubSpot').item.json.hubspot.company).some(k => k === 'icp_segment' || k === 'enrichment_summary') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3744,
+        -368
+      ],
+      "id": "3434702b-d703-46af-8c0b-fef431151be1",
+      "name": "Anything to update?"
     }
   ],
   "pinData": {},
@@ -1338,7 +1372,7 @@
       "main": [
         [
           {
-            "node": "HubSpot: update company",
+            "node": "Anything to update?",
             "type": "main",
             "index": 0
           }
@@ -1543,6 +1577,24 @@
           }
         ]
       ]
+    },
+    "Anything to update?": {
+      "main": [
+        [
+          {
+            "node": "HubSpot: update company",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Attach company id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -1554,7 +1606,7 @@
     "errorWorkflow": "E9Fldyd3Dbqco3jL",
     "callerPolicy": "workflowsFromSameOwner"
   },
-  "versionId": "830edcf1-e5c5-46d2-8ee1-7af10e256d44",
+  "versionId": "11bba4fa-3b4d-4fe1-9148-4fd9ffe97d9b",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "5ec32a661fcef1dc6899d63c595eff8489d041bddd81558284ea79cdb37b3275"

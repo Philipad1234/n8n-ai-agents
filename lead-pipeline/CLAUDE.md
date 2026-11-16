@@ -71,6 +71,7 @@ The live Vercel files are deployed from the separate `portfolio` repo. Copies he
 - **Slack returns HTTP 200 on failure** with `ok: false`. Always check `ok`.
 - **HubSpot's default `industry` property is a fixed dropdown.** Free text is rejected; industry goes into `enrichment_summary`.
 - **HubSpot search lags writes by a few seconds**, so near-simultaneous leads from a new domain can create duplicate companies. Known limitation.
+- **Don't send HubSpot an empty company PATCH.** When enrichment fails, `Map fields to HubSpot` drops both owned fields, so the update body would be `{"properties":{}}`. `Anything to update?` skips the call instead. On that path the item is still the search result, so `Attach company id` takes the id from `results[0]` and records `unchanged`. It never reports success without an id.
 - **Hunter's free Company Enrichment API returns null firmographics.** It was tested and deliberately not used.
 - **Anthropic keys not scoped to a workspace** need an `anthropic-workspace-id` header. This project uses a workspace-scoped key instead.
 - **Windows cmd `set`** keeps trailing spaces. Use `set "VAR=value"`.
