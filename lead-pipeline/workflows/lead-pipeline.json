@@ -19,7 +19,7 @@
       "typeVersion": 2.1,
       "position": [
         0,
-        -96
+        -144
       ],
       "id": "8b48ebfa-f059-4eaf-9ce1-7fdfee42f047",
       "name": "Webhook",
@@ -39,7 +39,7 @@
       "typeVersion": 2,
       "position": [
         224,
-        -96
+        -144
       ],
       "id": "33f68bcb-48db-4229-ac2f-29c9830a13c8",
       "name": "Extract and validate lead"
@@ -73,7 +73,7 @@
       "typeVersion": 2.3,
       "position": [
         448,
-        -96
+        -144
       ],
       "id": "076839d0-b8d9-4645-90c2-b14e08008fc8",
       "name": "Is valid lead?"
@@ -107,7 +107,7 @@
       "typeVersion": 2.3,
       "position": [
         672,
-        -16
+        -80
       ],
       "id": "71e1fcaf-014f-42b3-9e25-3b701f5092d3",
       "name": "Business email?"
@@ -138,7 +138,7 @@
       "typeVersion": 4.5,
       "position": [
         896,
-        -96
+        -176
       ],
       "id": "35e53475-0923-4337-b5e6-695e21bf1172",
       "name": "Fetch company website",
@@ -156,7 +156,7 @@
       "typeVersion": 2,
       "position": [
         1120,
-        -208
+        -320
       ],
       "id": "635f6f44-9ee6-4a42-902b-eb540d73eee7",
       "name": "Extract website text"
@@ -170,7 +170,7 @@
       "typeVersion": 2,
       "position": [
         1568,
-        -240
+        -336
       ],
       "id": "62c5ea5f-0a19-449f-9067-7a0f0e8cb0df",
       "name": "Build enrichment request"
@@ -201,7 +201,7 @@
       "typeVersion": 4.5,
       "position": [
         1792,
-        -240
+        -336
       ],
       "id": "8a072881-abcb-4b1e-8f54-89288ab4f3a7",
       "name": "Claude: enrich company",
@@ -224,7 +224,7 @@
       "typeVersion": 2,
       "position": [
         2016,
-        -288
+        -368
       ],
       "id": "6f799d4a-d6fe-4a39-81fe-0c3275ffc7c9",
       "name": "Parse and verify enrichment"
@@ -258,7 +258,7 @@
       "typeVersion": 2.3,
       "position": [
         1344,
-        -208
+        -320
       ],
       "id": "384a1904-1170-4d6a-85e3-984d04a5ef82",
       "name": "Usable website text?"
@@ -272,7 +272,7 @@
       "typeVersion": 2,
       "position": [
         2016,
-        0
+        -48
       ],
       "id": "d1c1d682-4946-4da0-92c4-abb11197883a",
       "name": "Enrichment fallback"
@@ -286,7 +286,7 @@
       "typeVersion": 2,
       "position": [
         2240,
-        -96
+        -144
       ],
       "id": "c35c1b6e-a073-4851-bdf2-223df9eff5d6",
       "name": "Build scoring request"
@@ -317,7 +317,7 @@
       "typeVersion": 4.5,
       "position": [
         2464,
-        -96
+        -144
       ],
       "id": "fa3ff091-4413-4cc2-8732-7ddcd84784b1",
       "name": "Claude: score lead",
@@ -340,7 +340,7 @@
       "typeVersion": 2,
       "position": [
         2688,
-        -96
+        -144
       ],
       "id": "90e75ea9-e29a-48fb-a5be-7dd7ed7a1bcb",
       "name": "Parse score and set tier"
@@ -354,7 +354,7 @@
       "typeVersion": 2,
       "position": [
         2912,
-        -96
+        -144
       ],
       "id": "b8b9454b-8d30-435b-8e97-3316d0539d2f",
       "name": "Map fields to HubSpot"
@@ -388,7 +388,7 @@
       "typeVersion": 2.3,
       "position": [
         3136,
-        -96
+        -144
       ],
       "id": "a8c08ee5-26fa-4df9-a189-6ef4d302cd0e",
       "name": "Has company?"
@@ -408,7 +408,7 @@
       "typeVersion": 4.5,
       "position": [
         3360,
-        -160
+        -224
       ],
       "id": "69886125-5e76-4ed0-9889-809edfe64153",
       "name": "HubSpot: find company by domain",
@@ -451,7 +451,7 @@
       "typeVersion": 2.3,
       "position": [
         3584,
-        -240
+        -288
       ],
       "id": "e1a2d9ce-a37e-482a-b0ce-f5cfc38fb2c6",
       "name": "Company exists?"
@@ -470,8 +470,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        3808,
-        -96
+        4032,
+        -80
       ],
       "id": "49f212ef-8f24-4993-8744-13f16773e48d",
       "name": "HubSpot: create company",
@@ -499,8 +499,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        3952,
-        -352
+        4032,
+        -368
       ],
       "id": "0464d0ca-fd51-45fb-bd09-1564e3ec7284",
       "name": "HubSpot: update company",
@@ -522,8 +522,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4032,
-        -64
+        4256,
+        -144
       ],
       "id": "c2e9c3a6-ab92-49e5-8fa1-d2333049e799",
       "name": "Attach company id"
@@ -542,8 +542,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        4256,
-        -64
+        4480,
+        -144
       ],
       "id": "fbd0129b-1925-45c2-be2f-adde859d1153",
       "name": "HubSpot: upsert contact",
@@ -565,8 +565,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4480,
-        -64
+        4704,
+        -144
       ],
       "id": "90b9fd7c-0df7-4e50-be92-79ae1ed4888d",
       "name": "Attach contact id"
@@ -599,8 +599,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        4704,
-        -64
+        4928,
+        -144
       ],
       "id": "06839049-7bdf-4cf7-b4cc-bccc879d6ac6",
       "name": "Can associate?"
@@ -616,8 +616,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        4928,
-        -288
+        5152,
+        -368
       ],
       "id": "5388797d-e1d5-47da-901b-34266fa1a791",
       "name": "HubSpot: associate contact to company",
@@ -639,8 +639,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5152,
-        -64
+        5376,
+        -144
       ],
       "id": "f947d29b-d46c-40c1-a15c-a090e7ae6e58",
       "name": "Finalize CRM result"
@@ -673,8 +673,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        5376,
-        -64
+        5600,
+        -144
       ],
       "id": "7fdc120c-3169-459e-af47-d708d71aaa6f",
       "name": "Needs alert?"
@@ -687,8 +687,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5600,
-        0
+        5824,
+        -48
       ],
       "id": "affd420b-d0b7-43f0-b343-56e04b09704b",
       "name": "Build Slack alert"
@@ -716,8 +716,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        5824,
-        0
+        6048,
+        -48
       ],
       "id": "a8f5785f-37f2-42bd-8fdd-4c1ef24b8093",
       "name": "Slack: post alert",
@@ -739,8 +739,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        6048,
-        0
+        6272,
+        -48
       ],
       "id": "74705225-ed0c-4088-963f-c9a0c272b745",
       "name": "Check Slack result"
@@ -753,8 +753,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        6272,
-        -208
+        6496,
+        -272
       ],
       "id": "4c1dcc19-8e21-4a04-afda-bfe45c64c901",
       "name": "Build log row"
@@ -996,8 +996,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        6496,
-        -208
+        6720,
+        -272
       ],
       "id": "5bda54ea-7dc6-4eae-b6e9-680c5430e487",
       "name": "Log run to Sheets",
@@ -1018,8 +1018,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -16,
-        -208
+        -32,
+        -336
       ],
       "id": "f721bed1-1236-4702-a40a-bbebb2e166c5",
       "name": "Sticky Note"
@@ -1035,7 +1035,7 @@
       "typeVersion": 1,
       "position": [
         640,
-        -368
+        -400
       ],
       "id": "de8fc44b-9e93-4775-b2d6-47357a66bcff",
       "name": "Sticky Note1"
@@ -1051,7 +1051,7 @@
       "typeVersion": 1,
       "position": [
         2192,
-        -240
+        -288
       ],
       "id": "f5d9460a-3b3a-43a4-a6b8-718f81f97a32",
       "name": "Sticky Note2"
@@ -1059,15 +1059,15 @@
     {
       "parameters": {
         "content": "## 4. CRM sync\nCompany dedupe by domain, contact upsert by email, association",
-        "height": 480,
-        "width": 2432,
+        "height": 496,
+        "width": 2656,
         "color": "#DCF5E3"
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
         2864,
-        -384
+        -400
       ],
       "id": "b5edc304-06c9-4ac1-b3ec-67bbf21e30af",
       "name": "Sticky Note3"
@@ -1082,8 +1082,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        5328,
-        -336
+        5568,
+        -400
       ],
       "id": "b2fc9e87-ebff-4cbf-be64-a692acd69134",
       "name": "Sticky Note4"
@@ -1116,8 +1116,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        3744,
-        -368
+        3808,
+        -336
       ],
       "id": "3434702b-d703-46af-8c0b-fef431151be1",
       "name": "Anything to update?"
@@ -1606,7 +1606,7 @@
     "errorWorkflow": "E9Fldyd3Dbqco3jL",
     "callerPolicy": "workflowsFromSameOwner"
   },
-  "versionId": "11bba4fa-3b4d-4fe1-9148-4fd9ffe97d9b",
+  "versionId": "01cd5f34-e434-4ce1-87b2-f2e4905c9655",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "5ec32a661fcef1dc6899d63c595eff8489d041bddd81558284ea79cdb37b3275"
